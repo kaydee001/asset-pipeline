@@ -43,11 +43,30 @@ def count_assets(assets):
     return asset_count
 
 
-scanned_assets = scan_assets(root_dir, ALLOWED_EXTENSIONS)
+def name_checker(assets):
+    err_name = []
+    for asset in assets:
+        file_name, file_ext = os.path.splitext(asset)
+        if " " in file_name:
+            err_name.append(file_name+file_ext)
+    return err_name
+
+
 # for asset in scanned_assets:
 #     print(asset)
 
-print(f"found {len(scanned_assets)} assets : ")
-asset_count = count_assets(scanned_assets)
-for key, value in asset_count.items():
-    print(f" -{key} : ", value)
+# print(f"found {len(scanned_assets)} assets : ")
+
+# for key, value in asset_count.items():
+#     print(f" -{key} : ", value)
+
+
+if __name__ == "__main__":
+    scanned_assets = scan_assets(root_dir, ALLOWED_EXTENSIONS)
+
+    asset_count = count_assets(scanned_assets)
+
+    check_name = name_checker(scanned_assets)
+    for asset in check_name:
+        print(
+            f"warning : {os.path.basename(asset)} contains space in filename")
