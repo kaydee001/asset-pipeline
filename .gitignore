@@ -6,4 +6,5 @@
 *.fbx
 *.obj
 *.txt
+*.json
 app/
