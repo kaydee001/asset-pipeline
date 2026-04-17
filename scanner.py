@@ -2,9 +2,6 @@ import os
 import json
 from typing import List
 
-# ROOT_DIR = r"D:\Users\kartik\Desktop\pipeline-projects\asset-pipeline"
-# ALLOWED_EXTENSIONS = ['.fbx', '.blend']
-
 try:
     with open('config.json', 'r') as file:
         data = json.load(file)
@@ -64,29 +61,36 @@ def find_duplicates(assets):
 
 
 def generate_report(scanned_assets, asset_count, check_name, duplicate_assets):
+    lines = []
+
+    lines.append(f"Asset Pipeline Report")
+    lines.append("="*20)
+    lines.append(f"total assets found {len(scanned_assets)} : ")
+
+    for key, value in asset_count.items():
+        lines.append(f"-{key} : {value}")
+    lines.append(f"naming issues : {len(check_name)}")
+
+    for asset in check_name:
+        lines.append(
+            f"- {os.path.basename(asset)}")
+
+    lines.append("duplicated assets found")
+    if len(duplicate_assets) < 1:
+        lines.append(" : none")
+    else:
+        for asset_name, asset_path in duplicate_assets.items():
+            lines.append(f" - {asset_name} : {asset_path}")
+
+    lines.append("="*20)
+
     with open("report.txt", "w") as file:
-        print(f"Asset Pipeline Report", file=file)
-        print("="*20, file=file)
-        print(f"total assets found {len(scanned_assets)} : ", file=file)
-        for key, value in asset_count.items():
-            print(f"-{key} : {value}", file=file)
-        print(f"naming issues : {len(check_name)}", file=file)
-        for asset in check_name:
-            print(
-                f"- {os.path.basename(asset)}", file=file)
-        print("duplicated assets found", file=file)
-        if len(duplicate_assets) < 1:
-            print(" : none", file=file)
-        else:
-            for asset_name, asset_path in duplicate_assets.items():
-                print(f" - {asset_name} : {asset_path}", file=file)
-
-        file.write("="*20)
+        file.write("\n".join(lines))
 
 
-def export_json_report(scaned_assets, asset_count, check_name, duplicate_assets):
+def export_json_report(scanned_assets, asset_count, check_name, duplicate_assets):
     data = {"total_assets": len(
-        scaned_assets),
+        scanned_assets),
         "asset_count": asset_count,
         "naming_issues": check_name,
         "duplicated_assets": duplicate_assets}
@@ -95,7 +99,7 @@ def export_json_report(scaned_assets, asset_count, check_name, duplicate_assets)
         json.dump(data, file, indent=4)
 
 
-if __name__ == "__main__":
+def run_pipeline():
     scanned_assets = scan_assets(ROOT_DIR, ALLOWED_EXTENSIONS)
     asset_count = count_assets(scanned_assets)
     check_name = name_checker(scanned_assets)
@@ -103,5 +107,7 @@ if __name__ == "__main__":
 
     generate_report(scanned_assets, asset_count, check_name, dup_assets)
     export_json_report(scanned_assets, asset_count, check_name, dup_assets)
-    # for asset_name, asset_path in dup_assets.items():
-    #     print(f"{asset_name} : {asset_path}")
+
+
+if __name__ == "__main__":
+    run_pipeline()
