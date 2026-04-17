@@ -51,7 +51,19 @@ def name_checker(assets):
     return err_name
 
 
-def generate_report(scanned_assets, asset_count, check_name):
+def find_duplicates(assets):
+    total_assets = {}
+    for asset in assets:
+        file_name, file_ext = os.path.splitext(asset)
+        asset_name = os.path.basename(file_name) + file_ext
+        at = total_assets.setdefault(asset_name, [])
+        at.append(asset)
+    duplicate_assets = {k: v for k,
+                        v in total_assets.items() if len(v) > 1}
+    return duplicate_assets
+
+
+def generate_report(scanned_assets, asset_count, check_name, duplicate_assets):
     with open("report.txt", "w") as file:
         print(f"Asset Pipeline Report", file=file)
         print("="*20, file=file)
@@ -62,14 +74,22 @@ def generate_report(scanned_assets, asset_count, check_name):
         for asset in check_name:
             print(
                 f"- {os.path.basename(asset)}", file=file)
+        print("duplicated assets found", file=file)
+        if len(duplicate_assets) < 1:
+            print(" : none", file=file)
+        else:
+            for asset_name, asset_path in duplicate_assets.items():
+                print(f" - {asset_name} : {asset_path}", file=file)
+
         file.write("="*20)
 
 
-def export_json_report(scaned_assets, asset_count, check_name):
+def export_json_report(scaned_assets, asset_count, check_name, duplicate_assets):
     data = {"total_assets": len(
         scaned_assets),
         "asset_count": asset_count,
-        "naming_issues": check_name}
+        "naming_issues": check_name,
+        "duplicated_assets": duplicate_assets}
 
     with open('data.json', 'w') as file:
         json.dump(data, file, indent=4)
@@ -79,6 +99,9 @@ if __name__ == "__main__":
     scanned_assets = scan_assets(ROOT_DIR, ALLOWED_EXTENSIONS)
     asset_count = count_assets(scanned_assets)
     check_name = name_checker(scanned_assets)
+    dup_assets = find_duplicates(scanned_assets)
 
-    generate_report(scanned_assets, asset_count, check_name)
-    export_json_report(scanned_assets, asset_count, check_name)
+    generate_report(scanned_assets, asset_count, check_name, dup_assets)
+    export_json_report(scanned_assets, asset_count, check_name, dup_assets)
+    # for asset_name, asset_path in dup_assets.items():
+    #     print(f"{asset_name} : {asset_path}")
