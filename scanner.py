@@ -1,6 +1,14 @@
 import os
 import json
+import argparse
 from typing import List
+
+parser = argparse.ArgumentParser()
+
+parser.add_argument("--folder", help="path to scan")
+parser.add_argument("--ext", help="allowed extensions", nargs="+")
+
+args = parser.parse_args()
 
 try:
     with open('config.json', 'r') as file:
@@ -12,18 +20,20 @@ except json.JSONDecodeError:
     print("not a valid json file")
     exit(1)
 
-ROOT_DIR = data["root_dir"]
-ALLOWED_EXTENSIONS = data["allowed_extensions"]
+ROOT_DIR = args.folder or data["root_dir"]
+ALLOWED_EXTENSIONS = args.ext or data["allowed_extensions"]
+
+exclude = {"node_modules", ".git", "__pycache__"}
 
 
-def scan_assets(folder, extensions) -> List:
+def scan_assets(folder, extensions):
     assets = []
 
-    for root, dirs, files in os.walk(folder):
-        for file in files:
-
-            path = os.path.join(root, file)
-            _, file_ext = os.path.splitext(file)
+    for root, dirs, files in os.walk(folder, topdown=True):
+        dirs[:] = [d for d in dirs if d not in exclude]
+        for f in files:
+            path = os.path.join(root, f)
+            _, file_ext = os.path.splitext(f)
 
             if file_ext in extensions:
                 assets.append(path)
