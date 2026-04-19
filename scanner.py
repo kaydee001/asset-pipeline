@@ -7,6 +7,8 @@ parser = argparse.ArgumentParser()
 
 parser.add_argument("--folder", help="path to scan")
 parser.add_argument("--ext", help="allowed extensions", nargs="+")
+parser.add_argument("--fix", help="auto fix naming issues",
+                    action="store_true")
 
 args = parser.parse_args()
 
@@ -70,6 +72,18 @@ def find_duplicates(assets):
     return duplicate_assets
 
 
+def fix_names(assets):
+    fixed_name = []
+    for asset in assets:
+        file_name, file_ext = os.path.splitext(asset)
+        dir_name = os.path.dirname(file_name)
+        file_name = os.path.basename(file_name)
+        file_name = file_name.replace(" ", "").lower()
+        new_name = os.path.join(dir_name, file_name+file_ext)
+        fixed_name.append(new_name)
+    return fixed_name
+
+
 def generate_report(scanned_assets, asset_count, check_name, duplicate_assets):
     lines = []
 
@@ -120,4 +134,11 @@ def run_pipeline():
 
 
 if __name__ == "__main__":
+    scanned_assets = scan_assets(ROOT_DIR, ALLOWED_EXTENSIONS)
+    if args.fix:
+        fixed = fix_names(scanned_assets)
+        for old, new in zip(scanned_assets, fixed):
+            os.rename(old, new)
+        scanned_assets = scan_assets(ROOT_DIR, ALLOWED_EXTENSIONS)
+
     run_pipeline()
