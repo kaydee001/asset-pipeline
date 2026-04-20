@@ -1,4 +1,6 @@
 import bpy
+import os
+import json
 
 
 def scene_validator(obj):
@@ -12,6 +14,16 @@ def scene_validator(obj):
     return warnings
 
 
+def create_json_report(warnings):
+    data = {"file": os.path.basename(bpy.data.filepath),
+            "total_warnings": len(warnings),
+            "warnings": warnings
+            }
+
+    with open('export_data.json', 'w') as file:
+        json.dump(data, file, indent=4)
+
+
 warnings_list = []
 for obj in bpy.data.objects:
     if obj.type == "MESH":
@@ -19,3 +31,5 @@ for obj in bpy.data.objects:
 
 for warning in warnings_list:
     print(warning)
+
+create_json_report(warnings_list)
