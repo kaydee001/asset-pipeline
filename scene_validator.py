@@ -2,6 +2,8 @@ import bpy
 import os
 import json
 
+output_path = r"D:\Users\kartik\Desktop\pipeline-projects\asset-pipeline\exports"
+
 
 def scene_validator(obj):
     warnings = []
@@ -29,6 +31,21 @@ def create_json_report(warnings):
         json.dump(data, file, indent=4)
 
 
+def batch_export(output_path):
+    os.makedirs(output_path, exist_ok=True)
+    export_type = ".fbx"
+
+    for obj in bpy.data.objects:
+        if obj.type == "MESH":
+            bpy.ops.object.select_all(action="DESELECT")
+            obj.select_set(True)
+            bpy.context.view_layer.objects.active = obj
+
+            obj_path = os.path.join(output_path, obj.name+export_type)
+
+            bpy.ops.export_scene.fbx(filepath=obj_path, use_selection=True)
+
+
 warnings_list = []
 for obj in bpy.data.objects:
     if obj.type == "MESH":
@@ -43,3 +60,4 @@ for obj in bpy.data.objects:
 #     print(warning)
 
 create_json_report(warnings_list)
+batch_export(output_path)
