@@ -14,6 +14,11 @@ def scene_validator(obj):
     return warnings
 
 
+def rename_objs(mesh_obj):
+    renamed_obj = mesh_obj.name.replace(" ", "").lower()
+    return renamed_obj
+
+
 def create_json_report(warnings):
     data = {"file": os.path.basename(bpy.data.filepath),
             "total_warnings": len(warnings),
@@ -29,7 +34,12 @@ for obj in bpy.data.objects:
     if obj.type == "MESH":
         warnings_list += scene_validator(obj)
 
-for warning in warnings_list:
-    print(warning)
+for obj in bpy.data.objects:
+    if obj.type == "MESH":
+        new_name = rename_objs(obj)
+        obj.name = new_name
+
+# for warning in warnings_list:
+#     print(warning)
 
 create_json_report(warnings_list)
