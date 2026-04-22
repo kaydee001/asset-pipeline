@@ -1,15 +1,23 @@
 import bpy
 import os
 import json
+import argparse
 
 output_path = r"D:\Users\kartik\Desktop\pipeline-projects\asset-pipeline\exports"
+parser = argparse.ArgumentParser()
+
+parser.add_argument(
+    "--output", help="output folder for json", default=output_path)
+parser.add_argument("--poly-limit", type=int, default=200)
+
+args, _ = parser.parse_known_args()
 
 
 def scene_validator(obj):
     warnings = []
     name = obj.name
     count = len(obj.data.polygons)
-    if count > 200:
+    if count > args.poly_limit:
         warnings.append(f"HIGH POLY : {obj.name} has {count} polygons")
     if any(ch.isupper() for ch in name):
         warnings.append(f"BAD NAME : {name}")
@@ -22,12 +30,16 @@ def rename_objs(mesh_obj):
 
 
 def create_json_report(warnings):
+    json_name = "export_data.json"
+    os.makedirs(args.output, exist_ok=True)
+
     data = {"file": os.path.basename(bpy.data.filepath),
             "total_warnings": len(warnings),
             "warnings": warnings
             }
+    json_path = os.path.join(args.output, json_name)
 
-    with open('export_data.json', 'w') as file:
+    with open(json_path, 'w') as file:
         json.dump(data, file, indent=4)
 
 
