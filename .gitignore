@@ -8,4 +8,5 @@
 *.txt
 *.json
 *.blend1
+*__pycache__
 app/

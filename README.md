@@ -35,7 +35,24 @@ python scanner.py --folder "D:/my_assets" --ext .fbx .blend
 - `report.txt` — human readable summary
 - `data.json` — machine readable report
 
-## Roadmap
-- [ ] Auto-fix naming issues
-- [ ] Blender export integration
-- [ ] GUI wrapper```
+## Scripts
+
+### scanner.py
+Scans a folder for 3D assets. Filters by extension, detects naming issues and duplicates. Outputs TXT and JSON reports.
+
+### scene_validator.py  
+Runs inside Blender to validate a scene. Checks poly limits, naming conventions. Batch renames objects and exports FBX files.
+
+### run_pipeline.py
+Master script. Finds all .blend files in a folder and runs scene_validator.py on each one automatically using subprocess.
+
+## CLI Usage
+
+**scanner.py**
+python scanner.py --folder "path/to/assets" --ext .fbx .blend --fix
+
+**scene_validator.py**
+blender -b scene.blend -P scene_validator.py
+
+**run_pipeline.py**
+python run_pipeline.py
