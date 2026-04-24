@@ -1,7 +1,6 @@
 import os
 import json
 import argparse
-from typing import List
 
 parser = argparse.ArgumentParser()
 
@@ -14,7 +13,7 @@ args = parser.parse_args()
 
 try:
     with open('config.json', 'r') as file:
-        data = json.load(file)
+        config = json.load(file)
 except FileNotFoundError:
     print("config not found")
     exit(1)
@@ -22,8 +21,8 @@ except json.JSONDecodeError:
     print("not a valid json file")
     exit(1)
 
-ROOT_DIR = args.folder or data["root_dir"]
-ALLOWED_EXTENSIONS = args.ext or data["allowed_extensions"]
+ROOT_DIR = args.folder or config["root_dir"]
+ALLOWED_EXTENSIONS = args.ext or config["allowed_extensions"]
 
 exclude = {"node_modules", ".git", "__pycache__"}
 
@@ -65,8 +64,8 @@ def find_duplicates(assets):
     for asset in assets:
         file_name, file_ext = os.path.splitext(asset)
         asset_name = os.path.basename(file_name) + file_ext
-        at = total_assets.setdefault(asset_name, [])
-        at.append(asset)
+        file_path = total_assets.setdefault(asset_name, [])
+        file_path.append(asset)
     duplicate_assets = {k: v for k,
                         v in total_assets.items() if len(v) > 1}
     return duplicate_assets
@@ -87,7 +86,7 @@ def fix_names(assets):
 def generate_report(scanned_assets, asset_count, check_name, duplicate_assets):
     lines = []
 
-    lines.append(f"Asset Pipeline Report")
+    lines.append("Asset Pipeline Report")
     lines.append("="*20)
     lines.append(f"total assets found {len(scanned_assets)} : ")
 
@@ -123,8 +122,7 @@ def export_json_report(scanned_assets, asset_count, check_name, duplicate_assets
         json.dump(data, file, indent=4)
 
 
-def run_pipeline():
-    scanned_assets = scan_assets(ROOT_DIR, ALLOWED_EXTENSIONS)
+def run_pipeline(scanned_assets):
     asset_count = count_assets(scanned_assets)
     check_name = name_checker(scanned_assets)
     dup_assets = find_duplicates(scanned_assets)
@@ -140,5 +138,4 @@ if __name__ == "__main__":
         for old, new in zip(scanned_assets, fixed):
             os.rename(old, new)
         scanned_assets = scan_assets(ROOT_DIR, ALLOWED_EXTENSIONS)
-
-    run_pipeline()
+    run_pipeline(scanned_assets)

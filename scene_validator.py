@@ -3,11 +3,10 @@ import os
 import json
 import argparse
 
-output_path = r"D:\Users\kartik\Desktop\pipeline-projects\asset-pipeline\exports"
 parser = argparse.ArgumentParser()
 
 parser.add_argument(
-    "--output", help="output folder for json", default=output_path)
+    "--output", help="output folder for json",  default=r"D:\Users\kartik\Desktop\pipeline-projects\asset-pipeline\exports")
 parser.add_argument("--poly-limit", type=int, default=200)
 
 args, _ = parser.parse_known_args()
@@ -25,19 +24,18 @@ def scene_validator(obj):
 
 
 def rename_objs(mesh_obj):
-    renamed_obj = mesh_obj.name.replace(" ", "").lower()
-    return renamed_obj
+    cleaned_name = mesh_obj.name.replace(" ", "").lower()
+    return cleaned_name
 
 
 def create_json_report(warnings):
-    json_name = "export_data.json"
     os.makedirs(args.output, exist_ok=True)
 
     data = {"file": os.path.basename(bpy.data.filepath),
             "total_warnings": len(warnings),
             "warnings": warnings
             }
-    json_path = os.path.join(args.output, json_name)
+    json_path = os.path.join(args.output, "export_data.json")
 
     with open(json_path, 'w') as file:
         json.dump(data, file, indent=4)
@@ -58,18 +56,19 @@ def batch_export(output_path):
             bpy.ops.export_scene.fbx(filepath=obj_path, use_selection=True)
 
 
-warnings_list = []
-for obj in bpy.data.objects:
-    if obj.type == "MESH":
-        warnings_list += scene_validator(obj)
+def run_pipeline():
+    warnings_list = []
+    for obj in bpy.data.objects:
+        if obj.type == "MESH":
+            warnings_list += scene_validator(obj)
 
-for obj in bpy.data.objects:
-    if obj.type == "MESH":
-        new_name = rename_objs(obj)
-        obj.name = new_name
+    for obj in bpy.data.objects:
+        if obj.type == "MESH":
+            new_name = rename_objs(obj)
+            obj.name = new_name
 
-# for warning in warnings_list:
-#     print(warning)
+    create_json_report(warnings_list)
+    batch_export(args.output)
 
-create_json_report(warnings_list)
-batch_export(output_path)
+
+run_pipeline()
